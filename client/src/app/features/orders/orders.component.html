@@ -1,0 +1,74 @@
+<div class="orders-container">
+  <header class="orders-header">
+    <h1 class="title">Panel de Órdenes en Tiempo Real</h1>
+    <div class="connection-status" [class]="connectionStatus()">
+      <span class="status-indicator"></span>
+      <span class="status-text">
+        @if (connectionStatus() === 'connected') {
+          Conectado
+        } @else if (connectionStatus() === 'connecting') {
+          Conectando...
+        } @else {
+          Desconectado
+        }
+      </span>
+    </div>
+  </header>
+  
+  @if (isLoading()) {
+    <div class="loading-container">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p class="loading-text">Cargando eventos de órdenes...</p>
+    </div>
+  }
+  
+  @if (error()) {
+    <div class="error-banner">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <span class="error-message">{{ error() }}</span>
+      <button mat-button color="primary" (click)="reconnect()">
+        Reintentar
+      </button>
+    </div>
+  }
+  
+  <section class="stats-section" [class.hidden]="!hasOrders()">
+    <div class="stat-card pending">
+      <mat-icon>schedule</mat-icon>
+      <div class="stat-info">
+        <span class="stat-value">{{ pendingCount() }}</span>
+        <span class="stat-label">Pendientes</span>
+      </div>
+    </div>
+    <div class="stat-card processed">
+      <mat-icon>autorenew</mat-icon>
+      <div class="stat-info">
+        <span class="stat-value">{{ processedCount() }}</span>
+        <span class="stat-label">Procesadas</span>
+      </div>
+    </div>
+    <div class="stat-card delivered">
+      <mat-icon>check_circle</mat-icon>
+      <div class="stat-info">
+        <span class="stat-value">{{ deliveredCount() }}</span>
+        <span class="stat-label">Entregadas</span>
+      </div>
+    </div>
+  </section>
+  
+  <main class="orders-grid" [class.hidden]="isLoading() || !hasOrders()">
+    @for (order of orders(); track trackByOrderId($index, order)) {
+      <app-order-card [order]="order"></app-order-card>
+    }
+  </main>
+  
+  @if (!isLoading() && !hasOrders() && !error()) {
+    <div class="empty-state">
+      <mat-icon>inbox</mat-icon>
+      <p>No hay órdenes disponibles</p>
+      <button mat-raised-button color="primary" (click)="reconnect()">
+        Refrescar
+      </button>
+    </div>
+  }
+</div>
